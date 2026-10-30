@@ -1,0 +1,116 @@
+movies = {
+    1: ["Jailer 2", ["10:00 AM", "02:00 PM", "06:00 PM"], 180],
+    2: ["Anbil Avan", ["11:00 AM", "03:00 PM", "07:00 PM"], 150],
+    3: ["Drones", ["12:00 PM", "04:00 PM", "08:00 PM"], 200]
+}
+
+current_booking = {
+    "movie_id": None,
+    "show_time": None,
+    "tickets": 0
+}
+
+while True:
+    print("\n===== MOVIE TICKET BOOKING SYSTEM =====")
+    print("1. View available movies")
+    print("2. Select movie and show time")
+    print("3. Book tickets")
+    print("4. Calculate ticket bill")
+    print("5. Exit")
+    
+    choice = input("Enter your choice: ")
+    
+    if choice == '1':
+        print("\n" + "=" * 65)
+        print(f"{'AVAILABLE MOVIES & SHOWS':^65}")
+        print("=" * 65)
+        print(f"{'ID':<5} | {'Movie Title':<20} | {'Show Times':<25} | {'Price':<6}")
+        print("-" * 65)
+        for mid, details in movies.items():
+            title = details[0]
+            shows = ", ".join(details[1])
+            price = details[2]
+            print(f"{mid:<5} | {title:<20} | {shows:<25} | RS{price:<5}")
+        print("=" * 65)
+        
+    elif choice == '2':
+        print("\n--- SELECT MOVIE AND SHOW TIME ---")
+        try:
+            mid = int(input("Enter Movie ID: "))
+            if mid not in movies:
+                raise ValueError("Error: Invalid Movie ID!")
+            
+            print(f"Available show times for '{movies[mid][0]}':")
+            for index, time in enumerate(movies[mid][1], 1):
+                print(f"  {index}. {time}")
+            
+            show_choice = int(input("Select show time number: "))
+            if show_choice < 1 or show_choice > len(movies[mid][1]):
+                raise ValueError("Error: Invalid show time selection!")
+            
+            current_booking["movie_id"] = mid
+            current_booking["show_time"] = movies[mid][1][show_choice - 1]
+            print(f"Success! Selected '{movies[mid][0]}' at {current_booking['show_time']}.")
+            
+        except ValueError as e:
+            print(e)
+            
+    elif choice == '3':
+        print("\n--- BOOK TICKETS ---")
+        if current_booking["movie_id"] is None:
+            print("Error: Please select a movie and show time first (Option 2)!")
+        else:
+            try:
+                tickets_qty = int(input("Enter number of tickets to book: "))
+                
+                if tickets_qty <= 0:
+                    raise ValueError("Error: Quantity must be greater than zero!")
+                
+                current_booking["tickets"] = tickets_qty
+                movie_name = movies[current_booking["movie_id"]][0]
+                print(f"Success! Reserved {tickets_qty} ticket(s) for {movie_name} at {current_booking['show_time']}.")
+                
+            except ValueError as e:
+                print(e)
+                
+    elif choice == '4':
+        print("\n" + "=" * 50)
+        print(f"{'BOOKING BILL & SUMMARY':^50}")
+        print("=" * 50)
+        
+        if current_booking["movie_id"] is None or current_booking["tickets"] == 0:
+            print("Incomplete booking! Please complete options 2 and 3 first.")
+        else:
+            mid = current_booking["movie_id"]
+            movie_name = movies[mid][0]
+            price_per_ticket = movies[mid][2]
+            qty = current_booking["tickets"]
+            
+            subtotal = price_per_ticket * qty
+            
+            print(f"Movie Title    : {movie_name}")
+            print(f"Show Time      : {current_booking['show_time']}")
+            print(f"Tickets Booked : {qty} x RS{price_per_ticket}")
+            print(f"Subtotal Amount: RS{subtotal}")
+            
+            if qty >= 5:
+                discount_rate = 0.10
+                print("Special Offer  : 10% Discount Applied (5+ tickets)")
+            else:
+                discount_rate = 0.0
+                print("Special Offer  : None (Book 5 or more tickets for 10% off)")
+            
+            discount_amount = subtotal * discount_rate
+            final_amount = subtotal - discount_amount
+            
+            print("-" * 50)
+            print(f"Discount       : -RS{discount_amount}")
+            print(f"Grand Total    : RS{final_amount}")
+            print("=" * 50)
+
+    elif choice == '5':
+        print("\nThank you for using the Movie Ticket Booking System. Enjoy your movie!")
+        break
+        
+    else:
+        print("\nInvalid choice! Please choose a number between 1 and 5.")
