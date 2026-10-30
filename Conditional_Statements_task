@@ -1,0 +1,588 @@
+'''if task'''
+
+'''1. check if number is greater than 100'''
+
+'''num = int(input("enter the number:"))
+if num > 100:
+  print(num,"is greater than 100.")
+elif num == 100:
+  print("The number is excatly 100.")
+else:
+  print("The number is not greater than 100.")'''
+
+'''2. check if number is less than 0'''
+
+'''num = int(input("enter the number:"))
+if num < 0:
+   print(num,"is less than 0.")
+elif num == 0:
+  print("The number is excatly 0.")
+else:
+  print("The number is greater than 0.")'''
+
+'''3. check if a character is A'''
+
+'''char_input = str(input("enter the character:"))
+if char_input == 'A':
+   print("The character is A.")
+elif char_input == 'a':
+  print("The character is lower case a.")
+else:
+  print(f"The character'{char_input}',is not A.")'''
+
+'''4. check if a number is dived by 7'''
+
+'''num = int(input("enter the number:"))
+if num %7==0:
+  print("number is divisable by 7")
+else:
+  print("number is not divide by 7")'''
+
+'''5. check if marks are exactly 100'''
+
+'''mark = float(input("enter the mark:"))
+if mark==100:
+  print("Marks are exactly 100.")
+else:
+  print("Marks are not 100.")'''
+
+'''6. check if a string length is more than 5'''
+
+'''text = input("Enter a string: ")
+
+if len(text) > 5:
+    print("The string is longer than 5 characters.")
+else:
+    print("The string is 5 characters or fewer.")'''
+
+'''7. check if a number ends with digit 5'''
+
+'''number = int(input("enter the number:"))
+
+if number % 10 == 5:
+  print(f"The number {number} ends with 5.")
+else:
+    print(f"The number {number} does not end with 5.")'''
+
+'''8. check if salary is equal to 25,000'''
+
+'''salary = int(input("enter the salary:"))
+
+if salary == 25000:
+  print(f"The salary, {salary},  is equal to 25,000.")
+elif salary > 25000:
+    print(f"The salary, {salary}, is higher than 25,000.")
+else:
+  print(f"The salary, {salary},  is not equal to 25,000.")'''
+
+'''9. check if user entered correct PIN (only check, no else)'''
+
+'''correct_pin = "1234"
+user_pin = input("Enter your PIN: ")
+
+if user_pin == correct_pin:
+    print("Access granted. Correct PIN!")'''
+
+'''if-else task'''
+
+'''1. Check if number is greater than 50 or not'''
+
+'''number = int(input("enter the number:"))
+
+if number > 50:
+  print(f"The number {number} greater than 50.")
+else:
+    print(f"The number {number} does not greater than 50.")'''
+
+'''2. check if a number is dived by 9 or not'''
+
+'''num = int(input("enter the number:"))
+if num %9==0:
+  print("number is divisable by 9")
+else:
+  print("number is not divide by 9")'''
+
+
+'''3.Compare two strings (equal or not)'''
+
+'''str1 = input("Enter the first string: ")
+str2 = input("Enter the second string: ")
+
+if str1 == str2:
+    print("The strings are equal.")
+else:
+    print("The strings are not equal.")
+'''
+
+'''4. Check if age is above 60 (senior) or not'''
+
+'''age = int(input("enter the age:"))
+if age > 60:
+  print("age is above 60 senior")
+else:
+  print("age is not above 60")'''
+
+'''5. Check if number is two-digit or not'''
+
+'''user_input = input("Enter a number: ")
+
+if len(user_input) == 2 and user_input.isdigit():
+    print("The input is a two-digit number.")
+else:
+    print("The input is not a two-digit number.")'''
+
+'''6.Check if character is alphabet or not'''
+
+'''char = input("Enter a character: ")
+
+if char.isalpha():
+    print(f"'{char}' is an alphabet letter.")
+else:
+    print(f"'{char}' is not an alphabet character.")'''
+
+'''7. Check if total purchase > 1000 for free delivery'''
+
+'''total_purchase = float(input("Enter the total purchase amount: "))
+if total_purchase > 1000:
+    print("Congratulations! You qualify for free delivery.")
+else:
+    print("Sorry, free delivery is only available for purchases over 1000.")
+'''
+
+'''8.Check if student attendance ≥ 75% or not'''
+
+'''attendance = float(input("Enter student attendance percentage: "))
+if attendance >= 75:
+    print(f"Attendance is {attendance}%. Eligible (≥ 75%).")
+else:
+    print(f"Attendance is {attendance}%. Not eligible (< 75%).")
+'''
+
+'''9.Check if username matches stored username'''
+
+'''stored_username = "admin_user"
+entered_username = input("Enter your username: ")
+
+if entered_username == stored_username:
+    print("Success! Username matches.")
+else:
+    print("Access denied. Incorrect username.")'''
+
+'''10. Check if number is multiple of 4 or not'''
+
+'''num = int(input("Enter a number: "))
+
+if num % 4 == 0:
+    print(f"{num} is a multiple of 4.")
+else:
+    print(f"{num} is not a multiple of 4.")'''
+
+'''11.Check if password equals "admin123"'''
+
+'''password = input("Enter your password: ")
+
+if password == "admin123":
+    print("Access granted!")
+else:
+    print("Incorrect password. Access denied.")'''
+
+'''if-else if- else task'''
+
+'''1. Determine season based on month number'''
+
+'''month = int(input("Enter month number (1-12): "))
+
+if month == 12 or month == 1 or month == 2:
+    print(f"Month {month} is in Winter.")
+elif month == 3 or month == 4 or month == 5:
+    print(f"Month {month} is in Spring.")
+elif month == 6 or month == 7 or month == 8:
+    print(f"Month {month} is in Summer.")
+elif month == 9 or month == 10 or month == 11:
+    print(f"Month {month} is in Autumn.")
+else:
+    print("Error: Invalid month number! Please enter a value between 1 and 12.")'''
+
+
+'''2. Check type of quadrilateral (square, rectangle, other)'''
+
+'''a = float(input("Enter side 1: "))
+b = float(input("Enter side 2: "))
+c = float(input("Enter side 3: "))
+d = float(input("Enter side 4: "))
+
+if a == b and b == c and c == d:
+    print("The quadrilateral is a Square.")
+elif a == c and b == d and a != b:
+    print("The quadrilateral is a Rectangle.")
+else:
+    print("The quadrilateral is Other.")'''
+
+'''3. Find smallest of three numbers'''
+
+'''num1 = float(input("Enter first number: "))
+num2 = float(input("Enter second number: "))
+num3 = float(input("Enter third number: "))
+
+if num1 <= num2 and num1 <= num3:
+    print(f"The smallest number is {num1}.")
+elif num2 <= num1 and num2 <= num3:
+    print(f"The smallest number is {num2}.")
+else:
+    print(f"The smallest number is {num3}.")'''
+
+'''4. Assign performance rating (Excellent, Good, Average, Poor)'''
+
+'''score = float(input("Enter performance score (0-100): "))
+
+if score >= 90:
+    print("Performance Rating: Excellent")
+elif score >= 75:
+    print("Performance Rating: Good")
+elif score >= 50:
+    print("Performance Rating: Average")
+else:
+    print("Performance Rating: Poor")'''
+
+'''5. Find largest among four numbers'''
+
+'''num1 = float(input("Enter first number: "))
+num2 = float(input("Enter second number: "))
+num3 = float(input("Enter third number: "))
+num4 = float(input("Enter fourth number: "))
+
+if num1 >= num2 and num1 >= num3 and num1 >= num4:
+    print(f"The largest number is {num1}.")
+elif num2 >= num1 and num2 >= num3 and num2 >= num4:
+    print(f"The largest number is {num2}.")
+elif num3 >= num1 and num3 >= num2 and num3 >= num4:
+    print(f"The largest number is {num3}.")
+else:
+    print(f"The largest number is {num4}.")'''
+
+'''6. Classify temperature (Freezing, Cold, Warm, Hot)'''
+
+'''temp = float(input("Enter temperature (in Celsius): "))
+
+if temp < 0:
+    print("Temperature Classification: Freezing")
+elif temp < 20:
+    print("Temperature Classification: Cold")
+elif temp < 30:
+    print("Temperature Classification: Warm")
+else:
+    print("Temperature Classification: Hot")'''
+
+'''7. ATM balance check / withdraw / deposit options'''
+
+'''print("===== ATM SYSTEM =====")
+balance = 5000.00
+
+while True:
+    print("\n1. Check Balance")
+    print("2. Deposit Money")
+    print("3. Withdraw Money")
+    print("4. Exit")
+    
+    choice = input("Enter your choice: ")
+    
+    if choice == '1':
+        print(f"Current Balance: RS{balance:.2f}")
+        
+    elif choice == '2':
+        amount = float(input("Enter amount to deposit: "))
+        if amount > 0:
+            balance = balance + amount
+            print(f"Successfully deposited RS{amount:.2f}. New Balance: RS{balance:.2f}")
+        else:
+            print("Error: Invalid deposit amount! Must be greater than zero.")
+            
+    elif choice == '3':
+        amount = float(input("Enter amount to withdraw: "))
+        if amount > 0:
+            if amount <= balance:
+                balance = balance - amount
+                print(f"Successfully withdrew RS{amount:.2f}. Remaining Balance: RS{balance:.2f}")
+            else:
+                print("Error: Insufficient balance!")
+        else:
+            print("Error: Invalid withdrawal amount! Must be greater than zero.")
+            
+    elif choice == '4':
+        print("\nThank you for using the ATM. Goodbye!")
+        break
+        
+    else:
+        print("Invalid choice! Please choose a number between 1 and 4.")'''
+
+'''8.Check number range (0–10, 11–50, 51–100, >100)'''
+
+'''number = float(input("Enter a number: "))
+
+if 0 <= number <= 10:
+    print(f"The number {number} falls in the range 0–10.")
+elif 11 <= number <= 50:
+    print(f"The number {number} falls in the range 11–50.")
+elif 51 <= number <= 100:
+    print(f"The number {number} falls in the range 51–100.")
+elif number > 100:
+    print(f"The number {number} is greater than 100 (>100).")
+else:
+    print(f"The number {number} is negative (less than 0).")'''
+
+'''9. Identify input as positive, negative, or zero'''
+
+'''number = float(input("Enter a number: "))
+
+if number > 0:
+    print(f"The number {number} is Positive.")
+elif number < 0:
+    print(f"The number {number} is Negative.")
+else:
+    print(f"The number {number} is Zero.")'''
+
+'''10. Check cricket score level (Duck, Half-century, Century)'''
+
+'''runs = int(input("Enter runs scored: "))
+
+if runs == 0:
+    print("Score Level: Duck (0 runs)")
+elif 1 <= runs <= 49:
+    print(f"Score Level: Standard Score ({runs} runs)")
+elif 50 <= runs <= 99:
+    print(f"Score Level: Half-Century ({runs} runs)")
+elif runs >= 100:
+    print(f"Score Level: Century ({runs} runs)")
+else:
+    print("Error: Runs cannot be negative!")'''
+
+'''11. Categorize internet speed (Slow, Medium, Fast)'''
+
+'''speed = float(input("Enter internet speed (in Mbps): "))
+
+if speed < 10:
+    print(f"Internet Speed: Slow ({speed} Mbps)")
+elif 10 <= speed <= 50:
+    print(f"Internet Speed: Medium ({speed} Mbps)")
+else:
+    print(f"Internet Speed: Fast ({speed} Mbps)")'''
+
+'''12. Determine transport type (Bike, Car, Bus, Truck) by wheels'''
+
+'''wheels = int(input("Enter number of wheels: "))
+
+if wheels == 2:
+    print("Transport Type: Bike")
+elif wheels == 4:
+    print("Transport Type: Car")
+elif wheels == 6:
+    print("Transport Type: Bus")
+elif wheels > 6:
+    print("Transport Type: Truck")
+else:
+    print("Transport Type: Other")'''
+
+'''13. Categorize exam result (Fail, Pass, Merit, Distinction, Topper)'''
+
+'''marks = float(input("Enter marks percentage (0-100): "))
+
+if marks == 100:
+    print("Result Category: Topper")
+elif marks >= 85:
+    print("Result Category: Distinction")
+elif marks >= 70:
+    print("Result Category: Merit")
+elif marks >= 40:
+    print("Result Category: Pass")
+elif marks >= 0:
+    print("Result Category: Fail")
+else:
+    print("Error: Marks cannot be negative!")'''
+
+'''14. Classify character (uppercase, lowercase, digit, special)'''
+
+'''char = input("Enter a single character: ")
+
+if 'A' <= char <= 'Z':
+    print(f"The character '{char}' is an Uppercase letter.")
+elif 'a' <= char <= 'z':
+    print(f"The character '{char}' is a Lowercase letter.")
+elif '0' <= char <= '9':
+    print(f"The character '{char}' is a Digit.")
+else:
+    print(f"The character '{char}' is a Special character.")'''
+
+'''Nestef if'''
+
+'''1. Check if a number is positive → then check if it is even or odd.'''
+
+'''number = int(input("Enter an integer: "))
+
+if number > 0:
+    print(f"The number {number} is Positive.")
+    
+    if number % 2 == 0:
+        print("-> It is an Even number.")
+    else:
+        print("-> It is an Odd number.")
+        
+elif number == 0:
+    print("The number is Zero.")
+else:
+    print(f"The number {number} is Negative.")'''
+
+'''2. Check if student passed all subjects → then check if eligible for distinction (average ≥ 75).'''
+
+'''sub1 = float(input("Enter marks for Subject 1: "))
+sub2 = float(input("Enter marks for Subject 2: "))
+sub3 = float(input("Enter marks for Subject 3: "))
+
+if sub1 >= 40 and sub2 >= 40 and sub3 >= 40:
+    print("\nStatus: Passed all subjects!")
+    
+    average = (sub1 + sub2 + sub3) / 3
+    print(f"Average Marks: {average:.2f}")
+    
+    if average >= 75:
+        print("Eligibility: Eligible for Distinction!")
+    else:
+        print("Eligibility: Standard Pass (Average is below 75).")
+        
+else:
+    print("\nStatus: Failed in one or more subjects (Marks below 40).")'''
+
+
+'''3. Check if age ≥ 18 → then check if user has driving license.'''
+
+'''age = int(input("Enter your age: "))
+
+if age >= 18:
+    print("Age check: You are 18 or older.")
+    
+    license_status = input("Do you have a driving license? (yes/no): ")
+    
+    if license_status == "yes":
+        print("Status: You are legally allowed to drive!")
+    else:
+        print("Status: You are of legal age, but you need to obtain a driving license.")
+        
+else:
+    print("Status: You are under 18. Not eligible to drive.")'''
+
+'''4. Check if login username is correct → then check if password is correct.'''
+
+'''correct_username = "admin"
+correct_password = "password123"
+
+username = input("Enter username: ")
+
+if username == correct_username:
+    print(f"Username '{username}' recognized. Verifying password...")
+    
+    password = input("Enter password: ")
+    
+    if password == correct_password:
+        print(f"Status: Login Successful! Welcome back, {username}.")
+    else:
+        print("Status: Login Failed! Incorrect password.")
+        
+else:
+    print(f"Status: Login Failed! Username '{username}' does not exist.")'''
+
+'''5. Check if number is divisible by 5 → then check if also divisible by 10.'''
+
+'''number = int(input("Enter an integer: "))
+
+if number % 5 == 0:
+    print(f"The number {number} is divisible by 5.")
+    
+    if number % 10 == 0:
+        print("-> It is also divisible by 10.")
+    else:
+        print("-> It is not divisible by 10.")
+        
+else:
+    print(f"The number {number} is not divisible by 5.")'''
+
+'''6. Check if year is divisible by 4 → then check leap year conditions (divisible by 100 and 400).'''
+
+'''year = int(input("Enter a year: "))
+
+if year % 4 == 0:
+    print(f"The year {year} is divisible by 4. Checking century conditions...")
+    
+    if year % 100 == 0:
+        if year % 400 == 0:
+            print(f"Status: {year} is a Leap Year (Divisible by 400).")
+        else:
+            print(f"Status: {year} is NOT a Leap Year (Divisible by 100, but not 400).")
+    else:
+        print(f"Status: {year} is a Leap Year (Not a century year).")
+        
+else:
+    print(f"Status: {year} is NOT a Leap Year (Not divisible by 4).")'''
+
+'''7. Check if salary > 30,000 → then check if experience > 5 years for bonus.'''
+
+'''salary = float(input("Enter your salary: "))
+
+if salary > 30000:
+    print(f"Salary is {salary:,.2f} (Greater than 30,000). Checking experience...")
+    
+    experience = float(input("Enter years of experience: "))
+    
+    if experience > 5:
+        print("Status: Eligible for Bonus! (Meets both salary and experience criteria).")
+    else:
+        print("Status: Not eligible for bonus. (Experience must be greater than 5 years).")
+        
+else:
+    print("Status: Not eligible for bonus. (Salary must be greater than 30,000).")'''
+
+'''8. Check if account balance > 0 → then check if withdrawal amount ≤ balance.'''
+
+'''balance = float(input("Enter account balance: "))
+
+if balance > 0:
+    print(f"Account balance is positive ({balance:,.2f}). Checking withdrawal request...")
+    
+    withdrawal = float(input("Enter amount to withdraw: "))
+    
+    if withdrawal <= balance:
+        remaining_balance = balance - withdrawal
+        print(f"Status: Withdrawal Approved! Remaining balance: RS{remaining_balance:,.2f}")
+    else:
+        print("Status: Withdrawal Denied! Insufficient funds (amount exceeds current balance).")
+        
+else:
+    print("Status: Withdrawal Denied! Account balance is zero or negative.")'''
+
+'''9. Check if temperature > 0 → then check if less than 20 (Cold category).'''
+
+'''temperature = float(input("Enter temperature (in °C): "))
+
+if temperature > 0:
+    print(f"Temperature is {temperature}°C (Above freezing). Checking category...")
+    
+    if temperature < 20:
+        print("Status: Cold category (Between 0°C and 20°C).")
+    else:
+        print("Status: Hot category (20°C or above).")
+        
+else:
+    print(f"Status: Freezing or Below Zero ({temperature}°C).")'''
+
+'''10. Check if marks ≥ 35 → then check if marks ≥ 90 (Topper).'''
+
+'''marks = float(input("Enter student's marks: "))
+
+if marks >= 35:
+    print("Status: Passed (Marks are 35 or above). Checking for topper status...")
+    
+    if marks >= 90:
+        print("Achievement: Topper! (Marks are 90 or above).")
+    else:
+        print("Achievement: Standard Pass (Marks are between 35 and 89).")
+        
+else:
+    print("Status: Failed (Marks are below 35).")'''
