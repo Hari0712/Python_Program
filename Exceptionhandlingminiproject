@@ -1,0 +1,114 @@
+#===== SMART SHOPPING =====
+#1. View Products
+#2. Purchase Product
+#3. View Bill
+#4. Exception Handling Demos
+#5. Exit
+#Enter your choice:
+products={
+    1:["Laptop", 450000, 5],
+    2:["Smartphone", 30000, 10],
+    3:["Headphone", 2500, 15],
+    4:["Smartwatch", 1500, 12],
+    5:["Backpack", 800, 20],
+    6:["Steelbottles", 320, 30]
+}
+
+cart = {}
+
+while True:
+    print("\n===== SMART SHOPPING =====")
+    print("1. View Products")
+    print("2. Purchase Product")
+    print("3. View Bill")
+    print("4. Exception Handling Demos")
+    print("5. Exit")
+
+    choice = input("Enter your choice:")
+
+    if choice == '1':
+        print("\n--- PRODUCT CATALOG ---")
+        print(f"{'ID':<5} | {'Product Name':<15} | {'Price(RS)':<12} | {'Quantity':<8}")
+        print("-" * 50)
+        for pid in products:
+            name = products[pid][0]
+            price = products[pid][1]
+            quantity = products[pid][2]
+
+            print(f"{pid:<5} | {name:<15} | {price:<12} | {quantity:<8}")
+        print("-" * 50)
+
+    elif choice == '2':
+        print("\n--- PURCHASE PRODUCT ---")
+        try:
+            pid = int(input("Enter Product ID to buy: "))
+
+            if pid not in products:
+                raise ValueError("Error: Invalid Product ID!")
+            
+            qty = int(input("Enter Product Quantity to buy: "))
+
+            if qty <= 0:
+                raise ValueError("Error: Quantity must be greater than zero!")
+
+            if products[pid][2] < qty:
+                raise ValueError(f"Error: Not enough stock! Only {products[pid][2]} left.")
+            else:
+                products[pid][2] -= qty
+                if pid in cart:
+                    cart[pid] += qty
+                else:
+                    cart[pid] = qty
+                print(f"Success! Added {qty} {products[pid][0]} to your cart.")
+                
+        except ValueError as e:
+            print(e)
+
+    elif choice == '3':
+        print("\n--- YOUR SHOPPING BILL ---")
+        if len(cart) == 0:
+            print("Your cart is empty!")
+        else:
+            print("Product Name\tQty\tPrice\tTotal")
+            print("-" * 40)
+            subtotal = 0
+            for pid in cart:
+                name = products[pid][0]
+                qty = cart[pid]
+                price = products[pid][1]
+                total = price * qty
+                subtotal += total
+                print(f"{name}\t\t{qty}\t{price}\t{total}")
+            
+            tax = subtotal * 0.05
+            grand_total = subtotal + tax
+            
+            print("-" * 40)
+            print(f"Subtotal: RS{subtotal}")
+            print(f"GST (5%): RS{tax}")
+            print(f"Grand Total: RS{grand_total}")
+            print("-" * 40)
+            
+    elif choice == '4':
+        print("\n--- EXCEPTION HANDLING DEMO ---")
+        
+        print("Demo 1: Trying to convert text into a number using int('abc')")
+        try:
+            bad_number = int("abc")
+        except ValueError as e:
+            print(f"Caught expected error: {e}")
+            
+        print("\nDemo 2: Accessing a missing key in a dictionary")
+        try:
+            missing_item = products[99]
+        except KeyError as e:
+            print(f"Caught expected error: {e}")
+            
+        print("Demo finished successfully!")
+
+    elif choice == '5':
+        print("\nThank you for shopping! Goodbye!")
+        break
+        
+    else:
+        print("\nInvalid choice! Please choose between 1 and 5.")
