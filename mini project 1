@@ -1,0 +1,137 @@
+#1. Smart Shopping & Billing System
+#==================================
+#Retail Domain
+#Problem statement:
+#=================
+#Develop a menu-based Python application that allows customers to select products, 
+#enter quantities, calculate the total bill, apply discounts based on the purchase amount, 
+#and display a formatted receipt.
+
+#Menu options
+#->View available products and prices
+#-> Purchase a product
+#-> Calculate shopping bill
+#-> Apply discount
+#-> Exit
+
+#Example scenario
+#=================
+#A customer buys 2 shirts at ₹500 each and 1 bag at ₹800. 
+#The program calculates the subtotal, checks discount eligibility,
+#and displays the final amount
+
+products={
+    1: ["Shirt", 500, 10],
+    2: ["Bag", 800, 5],
+    3: ["Jeans", 1200, 8],
+    4: ["Shoes", 1500, 6]
+}
+
+cart = {}
+
+while True:
+    print("\n===== SMART SHOPPING =====")
+    print("1. View Products")
+    print("2. Purchase Product")
+    print("3. View Bill")
+    print("4. Apply Discount")
+    print("5. Exit")
+
+    choice = input("Enter your choice:")
+
+    if choice == '1':
+        print("\n--- PRODUCT CATALOG ---")
+        print(f"{'ID':<5} | {'Product Name':<15} | {'Price(RS)':<12} | {'Quantity':<8}")
+        print("-" * 50)
+        for pid in products:
+            name = products[pid][0]
+            price = products[pid][1]
+            quantity = products[pid][2]
+
+            print(f"{pid:<5} | {name:<15} | {price:<12} | {quantity:<8}")
+        print("-" * 50)
+
+    elif choice == '2':
+        print("\n--- PURCHASE PRODUCT ---")
+        try:
+            pid = int(input("Enter Product ID to buy: "))
+
+            if pid not in products:
+                raise ValueError("Error: Invalid Product ID!")
+            
+            qty = int(input("Enter Product Quantity to buy: "))
+
+            if qty <= 0:
+                raise ValueError("Error: Quantity must be greater than zero!")
+
+            if products[pid][2] < qty:
+                raise ValueError(f"Error: Not enough stock! Only {products[pid][2]} left.")
+            else:
+                products[pid][2] -= qty
+                if pid in cart:
+                    cart[pid] += qty
+                else:
+                    cart[pid] = qty
+                print(f"Success! Added {qty} {products[pid][0]} to your cart.")
+                
+        except ValueError as e:
+            print(e)
+
+    elif choice == '3':
+        print("\n--- YOUR SHOPPING BILL ---")
+        if len(cart) == 0:
+            print("Your cart is empty!")
+        else:
+            print("Product Name\tQty\tPrice\tTotal")
+            print("-" * 40)
+            subtotal = 0
+            for pid in cart:
+                name = products[pid][0]
+                qty = cart[pid]
+                price = products[pid][1]
+                total = price * qty
+                subtotal += total
+                print(f"{name}\t\t{qty}\t{price}\t{total}")
+            
+            tax = subtotal * 0.05
+            grand_total = subtotal + tax
+            
+            print("-" * 50)
+            print(f"Subtotal: RS{subtotal}")
+            print(f"GST (5%): RS{tax}")
+            print(f"Grand Total: RS{grand_total}")
+            print("-" * 50)
+            
+    elif choice == '4':
+        print(f"{'DISCOUNT & FINAL RECEIPT':^50}")
+        print("-" * 50)
+        if not cart:
+            print("Your cart is empty! Purchase items before applying a discount.")
+        else:
+            subtotal = sum(products[pid][1] * qty for pid, qty in cart.items())
+            print(f"Subtotal: RS{subtotal}")
+            
+            if subtotal >= 2500:
+                discount_rate = 0.20
+                print("Discount: 20% OFF (Purchase over 2500 RS)")
+            elif subtotal >= 1000:
+                discount_rate = 0.10
+                print("Discount: 10% OFF (Purchase over 1000 RS)")
+            else:
+                discount_rate = 0.0
+                print("Discount: No discount (Minimum 1000 RS required for discount)")
+            
+            discount_amount = subtotal * discount_rate
+            final_amount = subtotal - discount_amount
+            
+            print(f"Discount Applied: -{discount_amount}")
+            print("-" * 50)
+            print(f"Final Amount to Pay: {final_amount}")
+            print("=" * 50)
+
+    elif choice == '5':
+        print("\nThank you for shopping! Goodbye!")
+        break
+        
+    else:
+        print("\nInvalid choice! Please choose between 1 and 5.")
