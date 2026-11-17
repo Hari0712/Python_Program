@@ -674,7 +674,7 @@ class AcupunctureFullClinic:
                 ", ".join(pain_chars),
                 f"Lessens: {self.painLessIn.get().strip()} | Worsens: {self.painWorseIn.get().strip()}",
                 f"{self.painInjIn.get().strip()} | Prior: {self.priorPainTxIn.get().strip()}",
-                "",  # Body Map removed placeholder
+                "",
                 self.tongueDxIn.get().strip(),
                 pulse_str,
                 acupoints,
@@ -694,6 +694,7 @@ class AcupunctureFullClinic:
             messagebox.showerror("Database Error", f"Error: {e}")
 
     def loadPatientToForm(self):
+        self.clearForm()
         id_str = self.pIdIn.get().strip()
         if not id_str:
             messagebox.showerror("Error", "Enter Patient ID first!")
@@ -870,6 +871,7 @@ class AcupunctureFullClinic:
 root = tk.Tk()
 obj = AcupunctureFullClinic(root)
 root.mainloop()
+
 
 
 '''----MySQL---'''
