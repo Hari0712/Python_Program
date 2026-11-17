@@ -1,0 +1,920 @@
+import tkinter as tk
+from tkinter import ttk, messagebox
+import pymysql
+
+
+class AcupunctureFullClinic:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Acupuncture Clinic - Full Intake & TCM Dx System")
+
+        try:
+            self.root.state("zoomed")
+        except tk.TclError:
+            self.root.geometry(f"{self.root.winfo_screenwidth()}x{self.root.winfo_screenheight()}+0+0")
+
+        self.root.update()
+        self.width = self.root.winfo_width()
+        self.height = self.root.winfo_height()
+
+        if self.width <= 200:
+            self.width = self.root.winfo_screenwidth()
+            self.height = self.root.winfo_screenheight() - 70
+
+        title = tk.Label(
+            self.root,
+            bg="#afcdcb",  
+            text="Acupuncture Clinic Management System (Full Intake)",
+            bd=3,
+            relief="groove",
+            font=("Arial", 24, "bold"),
+        )
+
+        title.pack(side="top", fill="x")
+
+        top_y = 55
+        bottom_margin = 15
+        btn_h = 38
+        gap = 8
+
+        left_w = int(self.width * 0.46)
+        panel_h = self.height - top_y - btn_h - gap - bottom_margin
+
+        self.notebook = ttk.Notebook(self.root)
+        self.notebook.place(x=15, y=top_y, width=left_w, height=panel_h)
+
+        self.tab1 = tk.Frame(self.notebook, bg="#e1e8de")
+        self.tab2 = tk.Frame(self.notebook, bg="#e1e8de")
+        self.tab3 = tk.Frame(self.notebook, bg="#e1e8de")
+        self.tab4 = tk.Frame(self.notebook, bg="#e1e8de")
+
+        self.notebook.add(self.tab1, text="1. Info & History")
+        self.notebook.add(self.tab2, text="2. Sleep & Organs")
+        self.notebook.add(self.tab3, text="3. Women / Men")
+        self.notebook.add(self.tab4, text="4. Pain & TCM Dx")
+
+        self.build_tab1()
+        self.build_tab2()
+        self.build_tab3()
+        self.build_tab4()
+
+        saveBtn = tk.Button(
+            self.root,
+            text="Save Full Patient Intake Record",
+            command=self.insertFun,
+            bg="#3b6e52",
+            fg="white",
+            font=("Arial", 13, "bold"),
+            bd=2,
+            relief="raised",
+        )
+        saveBtn.place(x=15, y=top_y + panel_h + gap, width=left_w, height=btn_h)
+
+        right_x = left_w + 30
+        right_w = self.width - right_x - 15
+        right_total_h = panel_h + gap + btn_h
+
+        self.detFrame = tk.Frame(self.root, bd=3, relief="groove", bg="#cdded7")
+        self.detFrame.place(x=right_x, y=top_y, width=right_w, height=right_total_h)
+
+        tk.Label(
+            self.detFrame, text="Patient ID:", bg="#cdded7", font=("Arial", 11, "bold")
+        ).grid(row=0, column=0, padx=6, pady=10)
+        self.pIdIn = tk.Entry(self.detFrame, width=8, font=("Arial", 11))
+        self.pIdIn.grid(row=0, column=1, padx=4, pady=10)
+
+        tk.Button(
+            self.detFrame, text="Load Form", command=self.loadPatientToForm, font=("Arial", 10, "bold"), width=10
+        ).grid(row=0, column=2, padx=4)
+        tk.Button(
+            self.detFrame, text="View Summary", command=self.viewSummaryPopup, font=("Arial", 10, "bold"), width=12
+        ).grid(row=0, column=3, padx=4)
+        tk.Button(
+            self.detFrame, text="Update Pain/Dx", command=self.painUpdatePopup, font=("Arial", 10, "bold"), width=13
+        ).grid(row=0, column=4, padx=4)
+        tk.Button(
+            self.detFrame, text="Show All", command=self.showAllPatients, font=("Arial", 10, "bold"), width=8
+        ).grid(row=0, column=5, padx=4)
+        tk.Button(
+            self.detFrame, text="Delete", command=self.disFun, bg="#c94a4a", fg="white", font=("Arial", 10, "bold"), width=7
+        ).grid(row=0, column=6, padx=4)
+
+        self.tabFun(right_w - 20, right_total_h - 62)
+        self.showAllPatients()
+
+    def make_scrollable_frame(self, parent):
+        bg = "#e1e8de"
+        canvas = tk.Canvas(parent, bg=bg, highlightthickness=0)
+        scrollbar = tk.Scrollbar(parent, orient="vertical", command=canvas.yview)
+        scroll_frame = tk.Frame(canvas, bg=bg)
+
+        scroll_frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+        canvas.create_window((0, 0), window=scroll_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        def _on_mousewheel(event):
+            canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+
+        def _bind_to_mousewheel(event):
+            canvas.bind_all("<MouseWheel>", _on_mousewheel)
+
+        def _unbind_from_mousewheel(event):
+            canvas.unbind_all("<MouseWheel>")
+
+        canvas.bind("<Enter>", _bind_to_mousewheel)
+        canvas.bind("<Leave>", _unbind_from_mousewheel)
+
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+        return scroll_frame
+
+    def build_tab1(self):
+        f = self.make_scrollable_frame(self.tab1)
+        bg = "#e1e8de"
+
+        tk.Label(f, text="Patient ID *:", bg=bg, font=("Arial", 10, "bold")).grid(row=0, column=0, padx=8, pady=4, sticky="w")
+        self.idIn = tk.Entry(f, width=15, font=("Arial", 10))
+        self.idIn.grid(row=0, column=1, padx=8, pady=4, sticky="w")
+
+        tk.Label(f, text="Full Name *:", bg=bg, font=("Arial", 10, "bold")).grid(row=1, column=0, padx=8, pady=4, sticky="w")
+        self.nameIn = tk.Entry(f, width=32, font=("Arial", 10))
+        self.nameIn.grid(row=1, column=1, padx=8, pady=4, sticky="w")
+
+        tk.Label(f, text="Date of Birth:", bg=bg, font=("Arial", 10, "bold")).grid(row=2, column=0, padx=8, pady=4, sticky="w")
+        self.dobIn = tk.Entry(f, width=32, font=("Arial", 10))
+        self.dobIn.grid(row=2, column=1, padx=8, pady=4, sticky="w")
+
+        tk.Label(f, text="Gender:", bg=bg, font=("Arial", 10, "bold")).grid(row=3, column=0, padx=8, pady=4, sticky="w")
+        self.genderCombo = ttk.Combobox(f, values=["Male", "Female", "Other"], width=15, state="readonly", font=("Arial", 10))
+        self.genderCombo.grid(row=3, column=1, padx=8, pady=4, sticky="w")
+        self.genderCombo.current(0)
+
+        tk.Label(f, text="Phone *:", bg=bg, font=("Arial", 10, "bold")).grid(row=4, column=0, padx=8, pady=4, sticky="w")
+        self.phoneIn = tk.Entry(f, width=32, font=("Arial", 10))
+        self.phoneIn.grid(row=4, column=1, padx=8, pady=4, sticky="w")
+
+        tk.Label(f, text="Address:", bg=bg, font=("Arial", 10, "bold")).grid(row=5, column=0, padx=8, pady=4, sticky="w")
+        self.addrIn = tk.Entry(f, width=32, font=("Arial", 10))
+        self.addrIn.grid(row=5, column=1, padx=8, pady=4, sticky="w")
+
+        tk.Label(f, text="Personal Physician:", bg=bg, font=("Arial", 10, "bold")).grid(row=6, column=0, padx=8, pady=4, sticky="w")
+        self.physIn = tk.Entry(f, width=32, font=("Arial", 10))
+        self.physIn.grid(row=6, column=1, padx=8, pady=4, sticky="w")
+
+        tk.Label(f, text="Emergency Contact:", bg=bg, font=("Arial", 10, "bold")).grid(row=7, column=0, padx=8, pady=4, sticky="w")
+        self.emergIn = tk.Entry(f, width=32, font=("Arial", 10))
+        self.emergIn.grid(row=7, column=1, padx=8, pady=4, sticky="w")
+
+        tk.Label(f, text="Heard About Us:", bg=bg, font=("Arial", 10, "bold")).grid(row=8, column=0, padx=8, pady=4, sticky="w")
+        self.refCombo = ttk.Combobox(f, values=["Physician", "Friend", "Pamphlet", "Other"], width=20, font=("Arial", 10))
+        self.refCombo.grid(row=8, column=1, padx=8, pady=4, sticky="w")
+        self.refCombo.set("Friend")
+
+        tk.Label(f, text="Main Issues & Severity:", bg=bg, font=("Arial", 10, "bold")).grid(row=9, column=0, columnspan=2, padx=8, pady=(8, 2), sticky="w")
+        self.issueEntries = []
+        self.sevCombos = []
+        for i in range(4):
+            row_f = tk.Frame(f, bg=bg)
+            row_f.grid(row=10 + i, column=0, columnspan=2, padx=8, pady=2, sticky="w")
+            tk.Label(row_f, text=f"{i+1}.", bg=bg, font=("Arial", 10, "bold")).pack(side="left")
+            ent = tk.Entry(row_f, width=28, font=("Arial", 10))
+            ent.pack(side="left", padx=4)
+            cmb = ttk.Combobox(row_f, values=["Severe", "Moderate", "Slight", "Normal"], width=10, state="readonly", font=("Arial", 9))
+            cmb.pack(side="left", padx=4)
+            cmb.current(1)
+            self.issueEntries.append(ent)
+            self.sevCombos.append(cmb)
+
+        tk.Label(f, text="Impairment to Daily Life:", bg=bg, font=("Arial", 10, "bold")).grid(row=14, column=0, padx=8, pady=4, sticky="w")
+        self.impairIn = tk.Entry(f, width=32, font=("Arial", 10))
+        self.impairIn.grid(row=14, column=1, padx=8, pady=4, sticky="w")
+
+        tk.Label(f, text="Other Treatments Used:", bg=bg, font=("Arial", 10, "bold")).grid(row=15, column=0, padx=8, pady=4, sticky="w")
+        self.otherTreatIn = tk.Entry(f, width=32, font=("Arial", 10))
+        self.otherTreatIn.grid(row=15, column=1, padx=8, pady=4, sticky="w")
+
+        tk.Label(f, text="Symptom Duration:", bg=bg, font=("Arial", 10, "bold")).grid(row=16, column=0, padx=8, pady=4, sticky="w")
+        self.durIn = tk.Entry(f, width=32, font=("Arial", 10))
+        self.durIn.grid(row=16, column=1, padx=8, pady=4, sticky="w")
+
+        tk.Label(f, text="Makes Better / Worse:", bg=bg, font=("Arial", 10, "bold")).grid(row=17, column=0, padx=8, pady=4, sticky="w")
+        self.betterWorseIn = tk.Entry(f, width=32, font=("Arial", 10))
+        self.betterWorseIn.grid(row=17, column=1, padx=8, pady=4, sticky="w")
+
+        tk.Label(f, text="Medical Diagnosis:", bg=bg, font=("Arial", 10, "bold")).grid(row=18, column=0, padx=8, pady=4, sticky="w")
+        self.medDxIn = tk.Entry(f, width=32, font=("Arial", 10))
+        self.medDxIn.grid(row=18, column=1, padx=8, pady=4, sticky="w")
+
+        tk.Label(f, text="Current Medications:", bg=bg, font=("Arial", 10, "bold")).grid(row=19, column=0, padx=8, pady=4, sticky="w")
+        self.medsIn = tk.Entry(f, width=32, font=("Arial", 10))
+        self.medsIn.grid(row=19, column=1, padx=8, pady=4, sticky="w")
+
+        tk.Label(f, text="Allergies:", bg=bg, font=("Arial", 10, "bold")).grid(row=20, column=0, padx=8, pady=4, sticky="w")
+        self.allergyIn = tk.Entry(f, width=32, font=("Arial", 10))
+        self.allergyIn.grid(row=20, column=1, padx=8, pady=4, sticky="w")
+
+        tk.Label(f, text="Critical Precautions:", bg=bg, font=("Arial", 10, "bold")).grid(row=21, column=0, padx=8, pady=6, sticky="nw")
+        p_frame = tk.Frame(f, bg=bg)
+        p_frame.grid(row=21, column=1, padx=8, pady=4, sticky="w")
+        self.precVars = {}
+        for idx, item in enumerate(["Pregnant", "Pacemaker", "Lymphedema", "Skin Infection"]):
+            var = tk.BooleanVar()
+            tk.Checkbutton(p_frame, text=item, variable=var, bg=bg, font=("Arial", 9)).grid(row=idx // 2, column=idx % 2, sticky="w")
+            self.precVars[item] = var
+
+        tk.Label(f, text="Skin Infection Location:", bg=bg, font=("Arial", 10, "bold")).grid(row=22, column=0, padx=8, pady=4, sticky="w")
+        self.skinLocIn = tk.Entry(f, width=32, font=("Arial", 10))
+        self.skinLocIn.grid(row=22, column=1, padx=8, pady=4, sticky="w")
+
+        tk.Label(f, text="Childhood Health:", bg=bg, font=("Arial", 10, "bold")).grid(row=23, column=0, padx=8, pady=4, sticky="w")
+        self.childIn = tk.Entry(f, width=32, font=("Arial", 10))
+        self.childIn.grid(row=23, column=1, padx=8, pady=4, sticky="w")
+
+        tk.Label(f, text="Hospital Stays:", bg=bg, font=("Arial", 10, "bold")).grid(row=24, column=0, padx=8, pady=4, sticky="w")
+        self.hospStayIn = tk.Entry(f, width=32, font=("Arial", 10))
+        self.hospStayIn.grid(row=24, column=1, padx=8, pady=4, sticky="w")
+
+        tk.Label(f, text="Immunizations:", bg=bg, font=("Arial", 10, "bold")).grid(row=25, column=0, padx=8, pady=4, sticky="w")
+        self.immIn = tk.Entry(f, width=32, font=("Arial", 10))
+        self.immIn.grid(row=25, column=1, padx=8, pady=4, sticky="w")
+
+        tk.Label(f, text="Surgeries:", bg=bg, font=("Arial", 10, "bold")).grid(row=26, column=0, padx=8, pady=4, sticky="w")
+        self.surgIn = tk.Entry(f, width=32, font=("Arial", 10))
+        self.surgIn.grid(row=26, column=1, padx=8, pady=4, sticky="w")
+
+    def build_tab2(self):
+        f = self.make_scrollable_frame(self.tab2)
+        bg = "#e1e8de"
+
+        tk.Label(f, text="Emotional State:", bg=bg, font=("Arial", 10, "bold")).grid(row=0, column=0, padx=8, pady=4, sticky="w")
+        self.emoIn = tk.Entry(f, width=32, font=("Arial", 10))
+        self.emoIn.grid(row=0, column=1, padx=8, pady=4, sticky="w")
+
+        tk.Label(f, text="Where Stress Held:", bg=bg, font=("Arial", 10, "bold")).grid(row=1, column=0, padx=8, pady=4, sticky="w")
+        self.stressHoldIn = tk.Entry(f, width=32, font=("Arial", 10))
+        self.stressHoldIn.grid(row=1, column=1, padx=8, pady=4, sticky="w")
+
+        tk.Label(f, text="Stress Level (0-10):", bg=bg, font=("Arial", 10, "bold")).grid(row=2, column=0, padx=8, pady=4, sticky="w")
+        self.stressLvlIn = tk.Entry(f, width=10, font=("Arial", 10))
+        self.stressLvlIn.grid(row=2, column=1, padx=8, pady=4, sticky="w")
+
+        tk.Label(f, text="Sleep Hours / Rested:", bg=bg, font=("Arial", 10, "bold")).grid(row=3, column=0, padx=8, pady=4, sticky="w")
+        self.sleepIn = tk.Entry(f, width=32, font=("Arial", 10))
+        self.sleepIn.grid(row=3, column=1, padx=8, pady=4, sticky="w")
+
+        tk.Label(f, text="Coffee / Smoke:", bg=bg, font=("Arial", 10, "bold")).grid(row=4, column=0, padx=8, pady=4, sticky="w")
+        self.coffeeSmokeIn = tk.Entry(f, width=32, font=("Arial", 10))
+        self.coffeeSmokeIn.grid(row=4, column=1, padx=8, pady=4, sticky="w")
+
+        tk.Label(f, text="Alcohol / Drugs:", bg=bg, font=("Arial", 10, "bold")).grid(row=5, column=0, padx=8, pady=4, sticky="w")
+        self.alcDrugIn = tk.Entry(f, width=32, font=("Arial", 10))
+        self.alcDrugIn.grid(row=5, column=1, padx=8, pady=4, sticky="w")
+
+        organ_groups = {
+            "Overall Temp (KI Fxn)": ["Cold Hands", "Cold Feet", "Sweaty Hands", "Sweaty Feet", "Afternoon Flushes", "Night Sweats", "Heat Hands/Feet/Chest", "Thirsty"],
+            "LU Fxn (Lung)": ["Nasal Discharge", "Cough", "Nose Bleeds", "Sinus Congestion", "Dry Mouth/Throat/Nose", "Headache", "Stiff Neck/Shoulders", "Sadness/Melancholy"],
+            "SP / ST / LI / SI Fxn": ["Loose Stool", "Constipation", "Diarrhea", "Blood/Mucous in Stool", "Body Heaviness", "Mental Fogginess", "Swollen Hands/Feet/Joints", "Nausea/Snoring"],
+            "Overall Energy & Blood": ["Shortness of Breath", "General Weakness", "Easily Catch Colds", "Worse After Exercise", "Dizziness", "Floating Black Spots", "Palpitations", "Anxiety"],
+            "HT Fxn (Heart)": ["Tongue Tip Sores", "Restlessness", "Mental Confusion", "Chest Pain to Shoulder", "Frequent Dreams", "Wake Unrefreshed"],
+            "SP & ST Fxn": ["Low Appetite", "Abrupt Weight Change", "Abdominal Bloating/Gas", "Fatigue After Eating", "Easily Bruised/Hemorrhoids", "Overthinking/Worry", "Heartburn/Acid Reflux", "Stomach Pain/Ulcer"],
+            "LIV / GB Fxn": ["Alternating Stool", "Tight Chest", "Bitter Taste", "Anger/Irritability", "Depression/Frustration", "Top-of-Head Headache", "Numbness/Tingling/Cramps", "Neck/Shoulder Tension", "Ear Ringing (High)"],
+            "KI / UB Fxn": ["Sore/Weak/Cold Knees", "Low Back Pain", "Poor Memory", "Hair Loss", "Ear Ringing (Low)", "Kidney/Bladder Issues", "Frequent Night Urination", "Fear/Easily Startled"],
+        }
+
+        self.organVars = {}
+        curr_row = 6
+        for group_name, symptoms in organ_groups.items():
+            tk.Label(f, text=group_name, bg=bg, fg="#234d36", font=("Arial", 10, "bold")).grid(row=curr_row, column=0, columnspan=2, padx=8, pady=(8, 2), sticky="w")
+            curr_row += 1
+            grp_f = tk.Frame(f, bg=bg)
+            grp_f.grid(row=curr_row, column=0, columnspan=2, padx=12, sticky="w")
+            for idx, sym in enumerate(symptoms):
+                v = tk.BooleanVar()
+                tk.Checkbutton(grp_f, text=sym, variable=v, bg=bg, font=("Arial", 9)).grid(row=idx // 2, column=idx % 2, sticky="w", padx=4)
+                self.organVars[f"{group_name}: {sym}"] = v
+            curr_row += 1
+
+        tk.Label(f, text="Urination Details:", bg=bg, font=("Arial", 10, "bold")).grid(row=curr_row, column=0, padx=8, pady=4, sticky="w")
+        self.urineIn = tk.Entry(f, width=32, font=("Arial", 10))
+        self.urineIn.grid(row=curr_row, column=1, padx=8, pady=4, sticky="w")
+
+        tk.Label(f, text="Eye Symptoms (LIV):", bg=bg, font=("Arial", 10, "bold")).grid(row=curr_row+1, column=0, padx=8, pady=4, sticky="w")
+        self.eyesIn = tk.Entry(f, width=32, font=("Arial", 10))
+        self.eyesIn.grid(row=curr_row+1, column=1, padx=8, pady=4, sticky="w")
+
+        tk.Label(f, text="Libido Status:", bg=bg, font=("Arial", 10, "bold")).grid(row=curr_row+2, column=0, padx=8, pady=4, sticky="w")
+        self.libidoIn = tk.Entry(f, width=32, font=("Arial", 10))
+        self.libidoIn.grid(row=curr_row+2, column=1, padx=8, pady=4, sticky="w")
+
+    def build_tab3(self):
+        f = self.make_scrollable_frame(self.tab3)
+        bg = "#e1e8de"
+
+        tk.Label(f, text="Women Only Health Section", bg=bg, fg="#234d36", font=("Arial", 11, "bold")).grid(row=0, column=0, columnspan=2, padx=8, pady=6, sticky="w")
+
+        tk.Label(f, text="Regular Cycle & Last Period:", bg=bg, font=("Arial", 10, "bold")).grid(row=1, column=0, padx=8, pady=4, sticky="w")
+        self.cycleIn = tk.Entry(f, width=32, font=("Arial", 10))
+        self.cycleIn.grid(row=1, column=1, padx=8, pady=4, sticky="w")
+
+        tk.Label(f, text="Infertility & # Children:", bg=bg, font=("Arial", 10, "bold")).grid(row=2, column=0, padx=8, pady=4, sticky="w")
+        self.infertIn = tk.Entry(f, width=32, font=("Arial", 10))
+        self.infertIn.grid(row=2, column=1, padx=8, pady=4, sticky="w")
+
+        tk.Label(f, text="First Menses Age & Days:", bg=bg, font=("Arial", 10, "bold")).grid(row=3, column=0, padx=8, pady=4, sticky="w")
+        self.mensesAgeIn = tk.Entry(f, width=32, font=("Arial", 10))
+        self.mensesAgeIn.grid(row=3, column=1, padx=8, pady=4, sticky="w")
+
+        tk.Label(f, text="Pregnancies / Miscarriages:", bg=bg, font=("Arial", 10, "bold")).grid(row=4, column=0, padx=8, pady=4, sticky="w")
+        self.pregHistIn = tk.Entry(f, width=32, font=("Arial", 10))
+        self.pregHistIn.grid(row=4, column=1, padx=8, pady=4, sticky="w")
+
+        tk.Label(f, text="Menopause / BC:", bg=bg, font=("Arial", 10, "bold")).grid(row=5, column=0, padx=8, pady=4, sticky="w")
+        self.menoBcIn = tk.Entry(f, width=32, font=("Arial", 10))
+        self.menoBcIn.grid(row=5, column=1, padx=8, pady=4, sticky="w")
+
+        tk.Label(f, text="Bleeding / Clots / Color:", bg=bg, font=("Arial", 10, "bold")).grid(row=6, column=0, padx=8, pady=4, sticky="w")
+        self.bleedIn = tk.Entry(f, width=32, font=("Arial", 10))
+        self.bleedIn.grid(row=6, column=1, padx=8, pady=4, sticky="w")
+
+        tk.Label(f, text="PMS Symptoms:", bg=bg, font=("Arial", 10, "bold")).grid(row=7, column=0, padx=8, pady=4, sticky="nw")
+        pms_f = tk.Frame(f, bg=bg)
+        pms_f.grid(row=7, column=1, padx=8, sticky="w")
+        self.pmsVars = {}
+        for idx, pms in enumerate(["Nausea", "Headaches/Migraines", "Anxiety/Depression", "Food Cravings", "Irritability", "Breast Swelling/Tenderness", "Bloating", "Period Cramps"]):
+            v = tk.BooleanVar()
+            tk.Checkbutton(pms_f, text=pms, variable=v, bg=bg, font=("Arial", 9)).grid(row=idx // 2, column=idx % 2, sticky="w")
+            self.pmsVars[pms] = v
+
+        tk.Label(f, text="7-Day Menstrual Chart:", bg=bg, font=("Arial", 10, "bold")).grid(row=8, column=0, columnspan=2, padx=8, pady=(8, 2), sticky="w")
+        
+        tk.Label(f, text="Daily Color (D1-D7):", bg=bg, font=("Arial", 10, "bold")).grid(row=9, column=0, padx=8, pady=4, sticky="w")
+        self.mColorIn = tk.Entry(f, width=32, font=("Arial", 10))
+        self.mColorIn.grid(row=9, column=1, padx=8, pady=4, sticky="w")
+
+        tk.Label(f, text="Daily Flow (D1-D7):", bg=bg, font=("Arial", 10, "bold")).grid(row=10, column=0, padx=8, pady=4, sticky="w")
+        self.mFlowIn = tk.Entry(f, width=32, font=("Arial", 10))
+        self.mFlowIn.grid(row=10, column=1, padx=8, pady=4, sticky="w")
+
+        tk.Label(f, text="Daily Pain/Cramps (D1-D7):", bg=bg, font=("Arial", 10, "bold")).grid(row=11, column=0, padx=8, pady=4, sticky="w")
+        self.mPainIn = tk.Entry(f, width=32, font=("Arial", 10))
+        self.mPainIn.grid(row=11, column=1, padx=8, pady=4, sticky="w")
+
+        tk.Label(f, text="Daily Clots/Nausea:", bg=bg, font=("Arial", 10, "bold")).grid(row=12, column=0, padx=8, pady=4, sticky="w")
+        self.mClotIn = tk.Entry(f, width=32, font=("Arial", 10))
+        self.mClotIn.grid(row=12, column=1, padx=8, pady=4, sticky="w")
+
+        tk.Label(f, text="Men Only Health Section", bg=bg, fg="#234d36", font=("Arial", 11, "bold")).grid(row=13, column=0, columnspan=2, padx=8, pady=(12, 4), sticky="w")
+        men_f = tk.Frame(f, bg=bg)
+        men_f.grid(row=14, column=0, columnspan=2, padx=12, sticky="w")
+        self.menVars = {}
+        for idx, m_sym in enumerate(["Swollen Testes", "Testicular Pain", "Impotence", "Premature Ejaculation", "Cold/Numb Testicles"]):
+            v = tk.BooleanVar()
+            tk.Checkbutton(men_f, text=m_sym, variable=v, bg=bg, font=("Arial", 9)).grid(row=idx // 2, column=idx % 2, sticky="w", padx=4)
+            self.menVars[m_sym] = v
+
+    def build_tab4(self):
+        f = self.make_scrollable_frame(self.tab4)
+        bg = "#e1e8de"
+
+        tk.Label(f, text="Pain Assessment Section", bg=bg, fg="#234d36", font=("Arial", 11, "bold")).grid(row=0, column=0, columnspan=2, padx=8, pady=6, sticky="w")
+
+        tk.Label(f, text="Pain Level (0-10) *:", bg=bg, font=("Arial", 10, "bold")).grid(row=1, column=0, padx=8, pady=4, sticky="w")
+        self.painIn = tk.Entry(f, width=10, font=("Arial", 10))
+        self.painIn.grid(row=1, column=1, padx=8, pady=4, sticky="w")
+
+        tk.Label(f, text="Location of Pain:", bg=bg, font=("Arial", 10, "bold")).grid(row=2, column=0, padx=8, pady=4, sticky="w")
+        self.painLocIn = tk.Entry(f, width=32, font=("Arial", 10))
+        self.painLocIn.grid(row=2, column=1, padx=8, pady=4, sticky="w")
+
+        tk.Label(f, text="Duration & Frequency:", bg=bg, font=("Arial", 10, "bold")).grid(row=3, column=0, padx=8, pady=4, sticky="w")
+        self.painDurIn = tk.Entry(f, width=32, font=("Arial", 10))
+        self.painDurIn.grid(row=3, column=1, padx=8, pady=4, sticky="w")
+
+        tk.Label(f, text="When Began & Injury (Y/N):", bg=bg, font=("Arial", 10, "bold")).grid(row=4, column=0, padx=8, pady=4, sticky="w")
+        self.painInjIn = tk.Entry(f, width=32, font=("Arial", 10))
+        self.painInjIn.grid(row=4, column=1, padx=8, pady=4, sticky="w")
+
+        tk.Label(f, text="Pain Character:", bg=bg, font=("Arial", 10, "bold")).grid(row=5, column=0, padx=8, pady=4, sticky="nw")
+        pc_f = tk.Frame(f, bg=bg)
+        pc_f.grid(row=5, column=1, padx=8, sticky="w")
+        self.painCharVars = {}
+        for idx, ch in enumerate(["Dull", "Sharp", "Cramping", "Burning", "Radiating", "Ache", "Moves", "Numb", "Tingling"]):
+            v = tk.BooleanVar()
+            tk.Checkbutton(pc_f, text=ch, variable=v, bg=bg, font=("Arial", 9)).grid(row=idx // 3, column=idx % 3, sticky="w")
+            self.painCharVars[ch] = v
+
+        tk.Label(f, text="Lessens Pain:", bg=bg, font=("Arial", 10, "bold")).grid(row=6, column=0, padx=8, pady=4, sticky="w")
+        self.painLessIn = tk.Entry(f, width=32, font=("Arial", 10))
+        self.painLessIn.grid(row=6, column=1, padx=8, pady=4, sticky="w")
+
+        tk.Label(f, text="Worsens Pain:", bg=bg, font=("Arial", 10, "bold")).grid(row=7, column=0, padx=8, pady=4, sticky="w")
+        self.painWorseIn = tk.Entry(f, width=32, font=("Arial", 10))
+        self.painWorseIn.grid(row=7, column=1, padx=8, pady=4, sticky="w")
+
+        tk.Label(f, text="Prior Treatments:", bg=bg, font=("Arial", 10, "bold")).grid(row=8, column=0, padx=8, pady=4, sticky="w")
+        self.priorPainTxIn = tk.Entry(f, width=32, font=("Arial", 10))
+        self.priorPainTxIn.grid(row=8, column=1, padx=8, pady=4, sticky="w")
+
+        tk.Label(f, text="Acupuncturist Diagnosis Section", bg=bg, fg="#234d36", font=("Arial", 11, "bold")).grid(row=9, column=0, columnspan=2, padx=8, pady=(12, 4), sticky="w")
+
+        tk.Label(f, text="TCM Tongue Zones:", bg=bg, font=("Arial", 10, "bold")).grid(row=10, column=0, padx=8, pady=4, sticky="w")
+        self.tongueDxIn = tk.Entry(f, width=32, font=("Arial", 10))
+        self.tongueDxIn.grid(row=10, column=1, padx=8, pady=4, sticky="w")
+
+        tk.Label(f, text="TCM Pulse Diagnostics:", bg=bg, font=("Arial", 10, "bold")).grid(row=11, column=0, columnspan=2, padx=8, pady=(6, 2), sticky="w")
+        pulse_f = tk.Frame(f, bg=bg)
+        pulse_f.grid(row=12, column=0, columnspan=2, padx=10, pady=4, sticky="w")
+
+        self.pulseEntries = {}
+        positions = ["Right Cun", "Right Guan", "Right Qi", "Left Cun", "Left Guan", "Left Qi"]
+        for idx, pos in enumerate(positions):
+            tk.Label(pulse_f, text=f"{pos}:", bg=bg, font=("Arial", 9, "bold")).grid(row=idx // 2, column=(idx % 2) * 2, padx=4, pady=2, sticky="w")
+            ent = tk.Entry(pulse_f, width=16, font=("Arial", 9))
+            ent.grid(row=idx // 2, column=(idx % 2) * 2 + 1, padx=4, pady=2)
+            self.pulseEntries[pos] = ent
+
+        tk.Label(f, text="Prescribed Acupoints *:", bg=bg, font=("Arial", 10, "bold")).grid(row=13, column=0, padx=8, pady=4, sticky="w")
+        self.dxIn = tk.Entry(f, width=32, font=("Arial", 10))
+        self.dxIn.grid(row=13, column=1, padx=8, pady=4, sticky="w")
+
+    def tabFun(self, w, h):
+        self.tabFrame = tk.Frame(self.detFrame, bd=2, relief="ridge", bg="white")
+        self.tabFrame.place(x=8, y=50, width=w, height=h)
+
+        x_scrol = tk.Scrollbar(self.tabFrame, orient="horizontal")
+        x_scrol.pack(side="bottom", fill="x")
+        y_scrol = tk.Scrollbar(self.tabFrame, orient="vertical")
+        y_scrol.pack(side="right", fill="y")
+
+        cols = ("id", "name", "dob", "gender", "phone", "issues", "pain", "stress", "prec", "tongue", "pulse", "acupoints")
+        self.table = ttk.Treeview(self.tabFrame, columns=cols, xscrollcommand=x_scrol.set, yscrollcommand=y_scrol.set)
+        x_scrol.config(command=self.table.xview)
+        y_scrol.config(command=self.table.yview)
+
+        headers = {
+            "id": ("ID", 50),
+            "name": ("Name", 120),
+            "dob": ("DOB", 85),
+            "gender": ("Gender", 65),
+            "phone": ("Phone", 100),
+            "issues": ("Main Issues", 180),
+            "pain": ("Pain", 50),
+            "stress": ("Stress", 55),
+            "prec": ("Precautions", 140),
+            "tongue": ("Tongue Dx", 140),
+            "pulse": ("Pulse Dx", 160),
+            "acupoints": ("Acupoints", 160),
+        }
+        self.table["show"] = "headings"
+        for col_id, (text, col_w) in headers.items():
+            self.table.heading(col_id, text=text)
+            self.table.column(col_id, width=col_w)
+
+        self.table.pack(fill="both", expand=1)
+
+    def dbFun(self):
+        self.con = pymysql.connect(host="localhost", user="root", password="G@yu@0701", database="hospital")
+        self.cur = self.con.cursor()
+
+    def showAllPatients(self):
+        try:
+            self.dbFun()
+            self.cur.execute(
+                """SELECT id, name, dob, gender, phone, main_issues, pain_level, stress_level, 
+                          precautions, tcm_tongue_dx, tcm_pulse_dx, acupoints_prescribed 
+                   FROM acupuncture_full_intake"""
+            )
+            rows = self.cur.fetchall()
+            self.table.delete(*self.table.get_children())
+            for row in rows:
+                self.table.insert("", tk.END, values=row)
+            self.con.close()
+        except Exception:
+            pass
+
+    def clearForm(self):
+        self.idIn.delete(0, tk.END)
+        self.nameIn.delete(0, tk.END)
+        self.dobIn.delete(0, tk.END)
+        self.genderCombo.current(0)
+        self.phoneIn.delete(0, tk.END)
+        self.addrIn.delete(0, tk.END)
+        self.physIn.delete(0, tk.END)
+        self.emergIn.delete(0, tk.END)
+        self.refCombo.set("Friend")
+
+        for ent, cmb in zip(self.issueEntries, self.sevCombos):
+            ent.delete(0, tk.END)
+            cmb.current(1)
+
+        self.impairIn.delete(0, tk.END)
+        self.otherTreatIn.delete(0, tk.END)
+        self.durIn.delete(0, tk.END)
+        self.betterWorseIn.delete(0, tk.END)
+        self.medDxIn.delete(0, tk.END)
+        self.medsIn.delete(0, tk.END)
+        self.allergyIn.delete(0, tk.END)
+
+        for var in self.precVars.values():
+            var.set(False)
+        self.skinLocIn.delete(0, tk.END)
+
+        self.childIn.delete(0, tk.END)
+        self.hospStayIn.delete(0, tk.END)
+        self.immIn.delete(0, tk.END)
+        self.surgIn.delete(0, tk.END)
+
+        self.emoIn.delete(0, tk.END)
+        self.stressHoldIn.delete(0, tk.END)
+        self.stressLvlIn.delete(0, tk.END)
+        self.sleepIn.delete(0, tk.END)
+        self.coffeeSmokeIn.delete(0, tk.END)
+        self.alcDrugIn.delete(0, tk.END)
+
+        for var in self.organVars.values():
+            var.set(False)
+
+        self.urineIn.delete(0, tk.END)
+        self.eyesIn.delete(0, tk.END)
+        self.libidoIn.delete(0, tk.END)
+
+        self.cycleIn.delete(0, tk.END)
+        self.infertIn.delete(0, tk.END)
+        self.mensesAgeIn.delete(0, tk.END)
+        self.pregHistIn.delete(0, tk.END)
+        self.menoBcIn.delete(0, tk.END)
+        self.bleedIn.delete(0, tk.END)
+
+        for var in self.pmsVars.values():
+            var.set(False)
+
+        self.mColorIn.delete(0, tk.END)
+        self.mFlowIn.delete(0, tk.END)
+        self.mPainIn.delete(0, tk.END)
+        self.mClotIn.delete(0, tk.END)
+
+        for var in self.menVars.values():
+            var.set(False)
+
+        self.painIn.delete(0, tk.END)
+        self.painLocIn.delete(0, tk.END)
+        self.painDurIn.delete(0, tk.END)
+        self.painInjIn.delete(0, tk.END)
+
+        for var in self.painCharVars.values():
+            var.set(False)
+
+        self.painLessIn.delete(0, tk.END)
+        self.painWorseIn.delete(0, tk.END)
+        self.priorPainTxIn.delete(0, tk.END)
+        self.tongueDxIn.delete(0, tk.END)
+
+        for ent in self.pulseEntries.values():
+            ent.delete(0, tk.END)
+
+        self.dxIn.delete(0, tk.END)
+
+    def insertFun(self):
+        id_str = self.idIn.get().strip()
+        name = self.nameIn.get().strip()
+        phone = self.phoneIn.get().strip()
+        pain_str = self.painIn.get().strip() or "0"
+        stress_str = self.stressLvlIn.get().strip() or "0"
+        acupoints = self.dxIn.get().strip()
+
+        if not (id_str and name and phone):
+            messagebox.showerror("Missing Required Fields", "Patient ID, Full Name, and Phone are required!")
+            return
+
+        try:
+            p_id = int(id_str)
+            pain_lvl = int(pain_str)
+            stress_lvl = int(stress_str)
+
+            if not (0 <= pain_lvl <= 10 and 0 <= stress_lvl <= 10):
+                messagebox.showerror("Invalid Scale", "Pain Level and Stress Level must be between 0 and 10!")
+                return
+
+            issues_list = []
+            for idx, (ent, cmb) in enumerate(zip(self.issueEntries, self.sevCombos), 1):
+                if ent.get().strip():
+                    issues_list.append(f"{idx}) {ent.get().strip()} [{cmb.get()}]")
+            main_issues_str = "; ".join(issues_list) if issues_list else "General Consultation"
+
+            prec_list = [k for k, v in self.precVars.items() if v.get()]
+            if self.skinLocIn.get().strip():
+                prec_list.append(f"Skin Loc: {self.skinLocIn.get().strip()}")
+            precautions_str = ", ".join(prec_list) if prec_list else "None"
+
+            med_history_str = (
+                f"Childhood: {self.childIn.get().strip()} | Hospital: {self.hospStayIn.get().strip()} | "
+                f"Immunizations: {self.immIn.get().strip()} | Surgeries: {self.surgIn.get().strip()}"
+            )
+
+            organ_checked = [k for k, v in self.organVars.items() if v.get()]
+            organ_str = ", ".join(organ_checked) if organ_checked else "None reported"
+
+            pms_checked = [k for k, v in self.pmsVars.items() if v.get()]
+            womens_str = (
+                f"Cycle/LMP: {self.cycleIn.get().strip()} | Infert/Kids: {self.infertIn.get().strip()} | "
+                f"Age/Days: {self.mensesAgeIn.get().strip()} | Preg/Misc/Ab: {self.pregHistIn.get().strip()} | "
+                f"Meno/BC: {self.menoBcIn.get().strip()} | Flow/Clots: {self.bleedIn.get().strip()} | "
+                f"PMS: {', '.join(pms_checked)}"
+            )
+            chart_str = (
+                f"Color: {self.mColorIn.get().strip()} | Flow: {self.mFlowIn.get().strip()} | "
+                f"Pain: {self.mPainIn.get().strip()} | Clots/GI: {self.mClotIn.get().strip()}"
+            )
+            men_checked = [k for k, v in self.menVars.items() if v.get()]
+            mens_str = ", ".join(men_checked) if men_checked else "N/A"
+
+            pain_chars = [k for k, v in self.painCharVars.items() if v.get()]
+            pulse_str = " | ".join(
+                [f"{pos}: {ent.get().strip()}" for pos, ent in self.pulseEntries.items() if ent.get().strip()]
+            )
+
+            self.dbFun()
+            query = """REPLACE INTO acupuncture_full_intake VALUES (
+                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+            )"""
+            values = (
+                p_id,
+                name,
+                self.dobIn.get().strip(),
+                self.genderCombo.get(),
+                phone,
+                self.addrIn.get().strip(),
+                self.physIn.get().strip(),
+                self.emergIn.get().strip(),
+                self.refCombo.get().strip(),
+                main_issues_str,
+                self.impairIn.get().strip(),
+                self.otherTreatIn.get().strip(),
+                self.durIn.get().strip(),
+                self.betterWorseIn.get().strip(),
+                self.medDxIn.get().strip(),
+                self.medsIn.get().strip(),
+                self.allergyIn.get().strip(),
+                precautions_str,
+                med_history_str,
+                f"{self.emoIn.get().strip()} / {self.stressHoldIn.get().strip()}",
+                stress_lvl,
+                self.sleepIn.get().strip(),
+                "",
+                f"{self.coffeeSmokeIn.get().strip()} | {self.alcDrugIn.get().strip()}",
+                organ_str,
+                f"Urine: {self.urineIn.get().strip()} | Eyes: {self.eyesIn.get().strip()} | Libido: {self.libidoIn.get().strip()}",
+                womens_str,
+                chart_str,
+                mens_str,
+                pain_lvl,
+                self.painLocIn.get().strip(),
+                self.painDurIn.get().strip(),
+                ", ".join(pain_chars),
+                f"Lessens: {self.painLessIn.get().strip()} | Worsens: {self.painWorseIn.get().strip()}",
+                f"{self.painInjIn.get().strip()} | Prior: {self.priorPainTxIn.get().strip()}",
+                "",  # Body Map removed placeholder
+                self.tongueDxIn.get().strip(),
+                pulse_str,
+                acupoints,
+            )
+
+            self.cur.execute(query, values)
+            self.con.commit()
+            self.con.close()
+
+            self.clearForm()
+            self.showAllPatients()
+            messagebox.showinfo("Saved", f"Full Acupuncture Intake saved for {name} (ID: {p_id})!")
+
+        except ValueError:
+            messagebox.showerror("Input Error", "ID, Pain Level, and Stress Level must be numbers!")
+        except Exception as e:
+            messagebox.showerror("Database Error", f"Error: {e}")
+
+    def loadPatientToForm(self):
+        id_str = self.pIdIn.get().strip()
+        if not id_str:
+            messagebox.showerror("Error", "Enter Patient ID first!")
+            return
+        try:
+            p_id = int(id_str)
+            self.dbFun()
+            self.cur.execute("SELECT * FROM acupuncture_full_intake WHERE id=%s", (p_id,))
+            row = self.cur.fetchone()
+            self.con.close()
+
+            if not row:
+                messagebox.showinfo("Not Found", f"No patient found with ID {p_id}")
+                return
+
+            self.idIn.delete(0, tk.END)
+            self.idIn.insert(0, row[0])
+            self.nameIn.delete(0, tk.END)
+            self.nameIn.insert(0, row[1] or "")
+            self.dobIn.delete(0, tk.END)
+            self.dobIn.insert(0, row[2] or "")
+            self.genderCombo.set(row[3] or "Male")
+            self.phoneIn.delete(0, tk.END)
+            self.phoneIn.insert(0, row[4] or "")
+            self.addrIn.delete(0, tk.END)
+            self.addrIn.insert(0, row[5] or "")
+            self.physIn.delete(0, tk.END)
+            self.physIn.insert(0, row[6] or "")
+            self.emergIn.delete(0, tk.END)
+            self.emergIn.insert(0, row[7] or "")
+            self.painIn.delete(0, tk.END)
+            self.painIn.insert(0, row[29] if row[29] is not None else 0)
+            self.painLocIn.delete(0, tk.END)
+            self.painLocIn.insert(0, row[30] or "")
+            self.tongueDxIn.delete(0, tk.END)
+            self.tongueDxIn.insert(0, row[36] or "")
+            self.dxIn.delete(0, tk.END)
+            self.dxIn.insert(0, row[38] or "")
+
+            messagebox.showinfo("Loaded", f"Loaded patient {row[1]} into form for editing.")
+        except Exception as e:
+            messagebox.showerror("Error", f"Error loading record: {e}")
+
+    def viewSummaryPopup(self):
+        id_str = self.pIdIn.get().strip()
+        if not id_str:
+            messagebox.showerror("Error", "Enter Patient ID to view full clinical sheet!")
+            return
+        try:
+            p_id = int(id_str)
+            self.dbFun()
+            self.cur.execute("SELECT * FROM acupuncture_full_intake WHERE id=%s", (p_id,))
+            r = self.cur.fetchone()
+            self.con.close()
+
+            if not r:
+                messagebox.showinfo("Not Found", f"No patient found with ID {p_id}")
+                return
+
+            win = tk.Toplevel(self.root)
+            win.title(f"Full Intake Summary - {r[1]} (ID: {r[0]})")
+            win.geometry("700x600")
+
+            txt = tk.Text(win, wrap="word", font=("Arial", 10), padx=12, pady=12)
+            txt.pack(fill="both", expand=True)
+
+            report = (
+                f"=== PATIENT DEMOGRAPHICS & HISTORY ===\n"
+                f"ID: {r[0]} | Name: {r[1]} | DOB: {r[2]} | Gender: {r[3]}\n"
+                f"Phone: {r[4]} | Address: {r[5]}\n"
+                f"Physician: {r[6]} | Emergency Contact: {r[7]} | Referral: {r[8]}\n"
+                f"Main Issues: {r[9]}\n"
+                f"Daily Impairment: {r[10]} | Other Treatments: {r[11]}\n"
+                f"Duration: {r[12]} | Better/Worse: {r[13]}\n"
+                f"Diagnosis: {r[14]} | Medications: {r[15]} | Allergies: {r[16]}\n"
+                f"PRECAUTIONS: {r[17]}\n"
+                f"Medical History: {r[18]}\n\n"
+                f"=== EMOTIONS, SLEEP & TCM ORGAN REVIEW ===\n"
+                f"Emotional/Stress: {r[19]} | Stress Level (0-10): {r[20]} | Sleep: {r[21]}\n"
+                f"Lifestyle: {r[23]}\n"
+                f"Checked Organ Symptoms: {r[24]}\n"
+                f"Urination / Eyes / Libido: {r[25]}\n\n"
+                f"=== WOMEN'S / MEN'S HEALTH ===\n"
+                f"Women's Health: {r[26]}\n"
+                f"7-Day Menstrual Chart: {r[27]}\n"
+                f"Men's Health: {r[28]}\n\n"
+                f"=== PAIN ASSESSMENT ===\n"
+                f"Pain Level (0-10): {r[29]} | Location: {r[30]} | Duration/Freq: {r[31]}\n"
+                f"Character: {r[32]} | Modifiers: {r[33]} | Injury/Prior Tx: {r[34]}\n\n"
+                f"=== PRACTITIONER TCM DIAGNOSIS ===\n"
+                f"TCM Tongue Dx: {r[36]}\n"
+                f"TCM Pulse Dx: {r[37]}\n"
+                f"Prescribed Acupoints: {r[38]}\n"
+            )
+            txt.insert("1.0", report)
+            txt.config(state="disabled")
+        except Exception as e:
+            messagebox.showerror("Error", f"Error: {e}")
+
+    def painUpdatePopup(self):
+        if not self.pIdIn.get().strip():
+            messagebox.showerror("Error", "Enter Patient ID first!")
+            return
+
+        self.painFrame = tk.Frame(self.root, bg="light gray", bd=3, relief="ridge")
+        self.painFrame.place(width=440, height=220, x=520, y=200)
+
+        tk.Label(self.painFrame, text="New Pain (0-10):", bg="light gray", font=("Arial", 12, "bold")).grid(row=0, column=0, padx=15, pady=15, sticky="w")
+        self.newPainIn = tk.Entry(self.painFrame, width=20, font=("Arial", 12))
+        self.newPainIn.grid(row=0, column=1, padx=10, pady=15)
+
+        tk.Label(self.painFrame, text="Updated Acupoints:", bg="light gray", font=("Arial", 12, "bold")).grid(row=1, column=0, padx=15, pady=10, sticky="w")
+        self.newDxIn = tk.Entry(self.painFrame, width=20, font=("Arial", 12))
+        self.newDxIn.grid(row=1, column=1, padx=10, pady=10)
+
+        tk.Button(self.painFrame, command=self.updateSession, text="Save Session", font=("Arial", 12, "bold"), width=13).grid(row=2, column=0, padx=15, pady=18)
+        tk.Button(self.painFrame, command=self.painFrame.destroy, text="Cancel", font=("Arial", 12, "bold"), width=13).grid(row=2, column=1, padx=15, pady=18)
+
+    def updateSession(self):
+        try:
+            p_id = int(self.pIdIn.get().strip())
+            new_pain = int(self.newPainIn.get().strip())
+            new_dx = self.newDxIn.get().strip()
+
+            if not (0 <= new_pain <= 10):
+                messagebox.showerror("Error", "Pain level must be 0 to 10!")
+                return
+
+            self.dbFun()
+            self.cur.execute("SELECT acupoints_prescribed FROM acupuncture_full_intake WHERE id=%s", (p_id,))
+            val = self.cur.fetchone()
+            if not val:
+                self.con.close()
+                messagebox.showerror("Error", f"Patient ID {p_id} not found!")
+                return
+
+            updated_dx = new_dx if new_dx else val[0]
+            self.cur.execute(
+                "UPDATE acupuncture_full_intake SET pain_level=%s, acupoints_prescribed=%s WHERE id=%s",
+                (new_pain, updated_dx, p_id),
+            )
+            self.con.commit()
+            self.con.close()
+
+            self.painFrame.destroy()
+            self.showAllPatients()
+            messagebox.showinfo("Updated", f"Pain & Acupoints updated for Patient {p_id}")
+        except Exception as e:
+            messagebox.showerror("Error", f"Error: {e}")
+
+    def disFun(self):
+        id_str = self.pIdIn.get().strip()
+        if not id_str:
+            messagebox.showerror("Error", "Enter Patient ID first!")
+            return
+        try:
+            p_id = int(id_str)
+            self.dbFun()
+            self.cur.execute("DELETE FROM acupuncture_full_intake WHERE id=%s", (p_id,))
+            affected = self.cur.rowcount
+            self.con.commit()
+            self.con.close()
+
+            if affected > 0:
+                self.showAllPatients()
+                self.pIdIn.delete(0, tk.END)
+                messagebox.showinfo("Deleted", f"Patient {p_id} record removed.")
+            else:
+                messagebox.showinfo("Not Found", f"No patient found with ID {p_id}")
+        except Exception as e:
+            messagebox.showerror("Error", f"Error: {e}")
+
+
+root = tk.Tk()
+obj = AcupunctureFullClinic(root)
+root.mainloop()
+
+
+'''----MySQL---'''
+CREATE DATABASE IF NOT EXISTS hospital;
+USE hospital;
+
+CREATE TABLE IF NOT EXISTS acupuncture_full_intake (
+    id INT PRIMARY KEY,
+    name VARCHAR(100),
+    dob VARCHAR(30),
+    gender VARCHAR(20),
+    phone VARCHAR(20),
+    address VARCHAR(200),
+    physician VARCHAR(100),
+    emergency_contact VARCHAR(100),
+    referral VARCHAR(50),
+    main_issues TEXT,
+    daily_impairment VARCHAR(150),
+    other_treatments VARCHAR(150),
+    duration VARCHAR(100),
+    better_worse VARCHAR(150),
+    medical_dx VARCHAR(150),
+    medications TEXT,
+    allergies TEXT,
+    precautions VARCHAR(200),
+    medical_history TEXT,
+    emotional_state VARCHAR(150),
+    stress_level INT,
+    sleep VARCHAR(100),
+    extra_field VARCHAR(100),
+    lifestyle VARCHAR(150),
+    organ_symptoms TEXT,
+    urination_eyes_libido TEXT,
+    womens_health TEXT,
+    menstrual_chart TEXT,
+    mens_health TEXT,
+    pain_level INT,
+    pain_location VARCHAR(150),
+    pain_duration VARCHAR(100),
+    pain_character VARCHAR(150),
+    pain_modifiers VARCHAR(200),
+    pain_injury_prior TEXT,
+    body_map_codes VARCHAR(150),
+    tcm_tongue_dx TEXT,
+    tcm_pulse_dx TEXT,
+    acupoints_prescribed TEXT
+);
+'''------'''
